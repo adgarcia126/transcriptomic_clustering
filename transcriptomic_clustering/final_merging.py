@@ -208,7 +208,7 @@ def final_merge(
         adata_reduced=projected_adata,
         cluster_assignments=obs_by_cluster,
         cluster_by_obs=cluster_by_obs,
-        return_markers_df=return_markers_df,
+        #return_markers_df=return_markers_df,
         n_jobs=n_jobs,
         **final_merge_kwargs.merge_clusters_kwargs
     )
