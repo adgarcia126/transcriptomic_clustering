@@ -40,8 +40,8 @@ class AnnDataIterWriter:
                 initial_chunk = np.atleast_2d(initial_chunk)
                 f.create_dataset("X", data=initial_chunk, maxshape=(None, initial_chunk.shape[1]), dtype=dtype)
 
-            ad._io.h5.write_dataframe(f, "obs", obs)
-            ad._io.h5.write_dataframe(f, "var", var)
+            obs.to_hdf(filename, key="obs", mode="a")
+            var.to_hdf(filename, key="var", mode="a")
 
     def add_chunk(self, chunk):
         """Appends a chunk to the existing dataset"""
