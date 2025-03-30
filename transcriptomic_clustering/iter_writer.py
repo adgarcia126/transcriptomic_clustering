@@ -4,7 +4,7 @@ import numpy as np
 import scipy as scp
 import anndata as ad
 import h5py
-from anndata._io.utils import write_elem
+from anndata.io import write_elem
 
 logger = logging.getLogger(__name__)
 
