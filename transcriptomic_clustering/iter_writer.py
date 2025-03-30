@@ -1,64 +1,59 @@
 import logging
+
 import numpy as np
-import scipy.sparse as sp
+import scipy as scp
 import anndata as ad
 import h5py
+from anndata._io.utils import write_elem
 
 logger = logging.getLogger(__name__)
 
-class AnnDataIterWriter:
+class AnnDataIterWriter():
     """
-    Class to handle iteratively writing file-backed AnnData objects
+    Class to handle iteratively writing filebacked AnnData Objects
     """
     def __init__(self, filename, initial_chunk, obs, var, dtype=None):
-        self.issparse = sp.issparse(initial_chunk)
+        self.issparse = scp.sparse.issparse(initial_chunk)
         self.initialize_file(filename, initial_chunk, obs, var, dtype=dtype)
         self.adata = ad.read_h5ad(filename, backed='r+')
 
+
     def initialize_file(self, filename, initial_chunk, obs, var, dtype=None):
-        """Initializes the H5AD file using the initial chunk"""
-        
+        """Uses initial chunk to determine grouptype"""
+
         with h5py.File(filename, "w") as f:
             if self.issparse:
                 if dtype is not None:
                     logger.warning("Ignoring dtype for sparse matrix")
-                
-                # Convert sparse matrix indices to int64 for compatibility
-                initial_chunk = initial_chunk.tocsr()
+                # TODO: change indextype based on nobs, nvars.
                 initial_chunk.indptr = initial_chunk.indptr.astype(np.int64)
                 initial_chunk.indices = initial_chunk.indices.astype(np.int64)
-                
-                # Store sparse matrix as a group
-                grp = f.create_group("X")
-                grp.create_dataset("data", data=initial_chunk.data)
-                grp.create_dataset("indices", data=initial_chunk.indices)
-                grp.create_dataset("indptr", data=initial_chunk.indptr)
-                grp.attrs["shape"] = initial_chunk.shape
+                ad._io.h5ad.write_csr(f, "X", initial_chunk)
+                write_elem(f, "X", initial_chunk)
+
             else:
                 if dtype is None:
                     dtype = initial_chunk.dtype
                 initial_chunk = np.atleast_2d(initial_chunk)
-                f.create_dataset("X", data=initial_chunk, maxshape=(None, initial_chunk.shape[1]), dtype=dtype)
+                ad._io.h5ad.write_array(
+                    f, "X", initial_chunk,
+                    dataset_kwargs={
+                        'maxshape': (None, initial_chunk.shape[1]),
+                        'dtype': dtype
+                    }
+                )
+            write_elem(f, "obs", obs)
+            write_elem(f, "var", var)
 
-            obs.to_hdf(filename, key="obs", mode="w")
-            var.to_hdf(filename, key="var", mode="w")
 
     def add_chunk(self, chunk):
-        """Appends a chunk to the existing dataset"""
         if self.issparse:
-            existing = sp.csr_matrix((self.adata.X.data, self.adata.X.indices, self.adata.X.indptr), shape=self.adata.X.shape)
-            new_matrix = sp.vstack([existing, chunk])
-            
-            with h5py.File(self.adata.filename, "r+") as f:
-                grp = f["X"]
-                grp["data"][...] = new_matrix.data
-                grp["indices"][...] = new_matrix.indices
-                grp["indptr"][...] = new_matrix.indptr
-                grp.attrs["shape"] = new_matrix.shape
+            self.adata.X.append(chunk)
         else:
             chunk = np.atleast_2d(chunk)
             chunk_nrows = chunk.shape[0]
-            with h5py.File(self.adata.filename, "r+") as f:
-                dset = f["X"]
-                dset.resize((dset.shape[0] + chunk_nrows), axis=0)
-                dset[-chunk_nrows:] = chunk
+            self.adata.X.resize(
+                (self.adata.X.shape[0] + chunk_nrows),
+                axis = 0
+            )
+            self.adata.X[-chunk_nrows:] = chunk
