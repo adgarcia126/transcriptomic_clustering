@@ -69,7 +69,11 @@ def create_filebacked_clusters(adata, clusters, tmp_dir: Path):
                     filename = Path(tmp_dir) / f'{old_filename}_{cl_id}.h5ad'
                     obs = adata.obs.iloc[cell_ids]
                     var = adata.var
-                    writers[cl_id] = AnnDataIterWriter(filename, sliced_chunk, obs, var)
+                    obsm = {
+                        key: (val[cell_ids] if isinstance(val, np.ndarray) else val.iloc[cell_ids])
+                        for key, val in adata.obsm.items()
+                    }
+                    writers[cl_id] = AnnDataIterWriter(filename, sliced_chunk, obs, var, obsm)
                     first[cl_id] = False
                 else:
                     writers[cl_id].add_chunk(sliced_chunk)
