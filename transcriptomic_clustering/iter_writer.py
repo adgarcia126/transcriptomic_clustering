@@ -28,7 +28,7 @@ class AnnDataIterWriter():
                 # TODO: change indextype based on nobs, nvars.
                 initial_chunk.indptr = initial_chunk.indptr.astype(np.int64)
                 initial_chunk.indices = initial_chunk.indices.astype(np.int64)
-                ad._io.h5ad.write_csr(f, "X", initial_chunk)
+                # ad._io.h5ad.write_csr(f, "X", initial_chunk)
                 write_elem(f, "X", initial_chunk)
 
             else:
