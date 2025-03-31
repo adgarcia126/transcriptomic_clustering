@@ -14,7 +14,7 @@ class AnnDataIterWriter():
     """
     def __init__(self, filename, initial_chunk, obs, var, dtype=None):
         self.issparse = scp.sparse.issparse(initial_chunk)
-        self.initialize_file(filename, initial_chunk, obs, var, dtype=dtype)
+        self.initialize_file(filename, initial_chunk, obs, var, obsm, dtype=dtype)
         self.adata = ad.read_h5ad(filename, backed='r+')
 
 
