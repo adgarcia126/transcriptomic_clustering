@@ -18,7 +18,7 @@ class AnnDataIterWriter():
         self.adata = ad.read_h5ad(filename, backed='r+')
 
 
-    def initialize_file(self, filename, initial_chunk, obs, var, dtype=None):
+    def initialize_file(self, filename, initial_chunk, obs, var, obsm, dtype=None):
         """Uses initial chunk to determine grouptype"""
 
         with h5py.File(filename, "w") as f:
@@ -44,6 +44,8 @@ class AnnDataIterWriter():
                 )
             write_elem(f, "obs", obs)
             write_elem(f, "var", var)
+            for key, val in obsm.items():
+                write_elem(f, f"obsm/{key}", val)  # Store each key separately
 
 
     def add_chunk(self, chunk):
