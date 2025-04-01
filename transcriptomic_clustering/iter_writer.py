@@ -12,7 +12,7 @@ class AnnDataIterWriter():
     """
     Class to handle iteratively writing filebacked AnnData Objects
     """
-    def __init__(self, filename, initial_chunk, obs, var, dtype=None):
+    def __init__(self, filename, initial_chunk, obs, var, obsm, dtype=None):
         self.issparse = scp.sparse.issparse(initial_chunk)
         self.initialize_file(filename, initial_chunk, obs, var, obsm, dtype=dtype)
         self.adata = ad.read_h5ad(filename, backed='r+')
