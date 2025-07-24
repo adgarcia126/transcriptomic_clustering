@@ -60,14 +60,13 @@ def select_marker_genes(
     thresholds.pop('score_thresh', None)
     neighbor_pairs = list(combinations(cl_names, 2))
     if de_method == 'ebayes':
-        de_df = tc.de_ebayes.de_pairs_ebayes_parallel(
+        de_df = tc.de_pairs_ebayes(
             neighbor_pairs,
             cluster_means,
             cluster_variances,
             present_cluster_means,
             cl_size,
-            thresholds,
-            n_jobs = n_jobs
+            thresholds
         )
     elif de_method == 'chisq':
         de_df = tc.de_pairs_chisq(
