@@ -20,8 +20,16 @@ class AnnDataIterWriter():
 
     def initialize_file(self, filename, initial_chunk, obs, var, obsm, dtype=None):
         with h5py.File(filename, "w") as f:
-            if dtype is not None and not self.issparse:
-                initial_chunk = np.asarray(initial_chunk, dtype=dtype)
+            if self.issparse:
+                if dtype is not None:
+                    initial_chunk = initial_chunk.astype(dtype)
+                else:
+                    initial_chunk = initial_chunk.astype(np.float32)
+            else:
+                if dtype is not None:
+                    initial_chunk = np.asarray(initial_chunk, dtype=dtype)
+                else:
+                    initial_chunk = np.asarray(initial_chunk, dtype=np.float32)
     
             initial_chunk = np.atleast_2d(initial_chunk)
             write_elem(f, "X", initial_chunk)
@@ -31,17 +39,6 @@ class AnnDataIterWriter():
             f.create_group("obsm")
             for key, val in obsm.items():
                 write_elem(f, f"obsm/{key}", val)
-            else:
-                if dtype is None:
-                    dtype = initial_chunk.dtype
-                initial_chunk = np.atleast_2d(initial_chunk)
-                ad._io.h5ad.write_array(
-                    f, "X", initial_chunk,
-                    dataset_kwargs={
-                        'maxshape': (None, initial_chunk.shape[1]),
-                        'dtype': dtype
-                    }
-                )
             f["obsm"].attrs["__keys__"] = list(obsm.keys())
             write_elem(f, "obs", obs)
             write_elem(f, "var", var)
