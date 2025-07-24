@@ -31,7 +31,6 @@ class AnnDataIterWriter():
             f.create_group("obsm")
             for key, val in obsm.items():
                 write_elem(f, f"obsm/{key}", val)
-            f["obsm"].attrs["__keys__"] = list(obsm.keys())
             else:
                 if dtype is None:
                     dtype = initial_chunk.dtype
@@ -43,6 +42,7 @@ class AnnDataIterWriter():
                         'dtype': dtype
                     }
                 )
+            f["obsm"].attrs["__keys__"] = list(obsm.keys())
             write_elem(f, "obs", obs)
             write_elem(f, "var", var)
             for key, val in obsm.items():
