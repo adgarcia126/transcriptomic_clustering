@@ -114,7 +114,7 @@ def final_merge(
 
     obs_by_cluster = defaultdict(lambda: [])
     for i, cell_ids in enumerate(cluster_assignments):
-        obs_by_cluster[i] = cell_ids
+        obs_by_cluster[i] = list(cell_ids)
     
     cluster_by_obs = _cluster_obs_dict_to_list(obs_by_cluster)
 
