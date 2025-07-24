@@ -32,7 +32,6 @@ class AnnDataIterWriter():
             for key, val in obsm.items():
                 write_elem(f, f"obsm/{key}", val)
             f["obsm"].attrs["__keys__"] = list(obsm.keys())
-            
             else:
                 if dtype is None:
                     dtype = initial_chunk.dtype
